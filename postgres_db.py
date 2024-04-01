@@ -25,7 +25,7 @@ class PostgresDB:
                         repository_id SERIAL PRIMARY KEY,
                         username VARCHAR(255) NOT NULL,
                         url TEXT NOT NULL,
-                        description TEXT NOT NULL,
+                        description TEXT,
                         language VARCHAR(255) NOT NULL,
                         watchers INTEGER,
                         forks_count INTEGER
@@ -39,10 +39,37 @@ class PostgresDB:
             if conn is not None:
                 conn.close()
 
-    def insert_to_table(self):
+    def insert_to_table(self, data: list[dict]) -> None:
+        """
+        Добавляет данные в таблицу.
+        :param data: список словарей, содержащих статистику по каждому репозиторию
+        :return: None
+        """
+        try:
+            with psycopg2.connect(**self.params) as conn:
+                with conn.cursor() as cur:
+
+                    for repo in data:
+                        cur.execute(
+                            """
+                            INSERT INTO statistics (username, url, description, language, watchers, forks_count)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            """,
+                            (repo['username'], repo['url'], repo['description'], repo['language'],
+                             repo['watchers'], repo['forks_count'])
+                        )
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
+        finally:
+            if conn is not None:
+                conn.close()
+
+    def get_data_from_postgres(self) -> list:
         pass
 
-    def get_to_json(self):
+    def save_to_json(self):
         pass
 
     def __repr__(self):

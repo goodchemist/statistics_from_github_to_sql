@@ -1,6 +1,6 @@
-from config import config
-from functions import get_repos_stats
-from postgres_db import PostgresDB
+from src.config import config
+from src.functions import get_repos_stats
+from src.postgres_db import PostgresDB
 
 
 def main():

@@ -22,7 +22,6 @@ class PostgresDB:
         try:
             with psycopg2.connect(**self.params) as conn:
                 with conn.cursor() as cur:
-
                     cur.execute("""CREATE TABLE IF NOT EXISTS statistics (
                         repository_id SERIAL PRIMARY KEY,
                         username VARCHAR(255) NOT NULL,
@@ -50,7 +49,6 @@ class PostgresDB:
         try:
             with psycopg2.connect(**self.params) as conn:
                 with conn.cursor() as cur:
-
                     for repo in data:
                         cur.execute(
                             """
@@ -101,7 +99,16 @@ class PostgresDB:
             f.write(json_data)
 
     def __repr__(self):
-        pass
+        """
+        Отображение экземпляра класса PostgresDB.
+        :return: f-строка
+        """
+        return f"PostgresDB(db_name='{self.db_name}', params={self.params})"
 
     def __str__(self):
-        pass
+        """
+        Отображение экземпляра класса PostgresDB в удобном для пользователя виде.
+        :return: f-строка
+        """
+        return (f"Экземпляр класса PostgresDB с именем базы данных {self.db_name} "
+                f"и параметрами подключения: {self.params}")

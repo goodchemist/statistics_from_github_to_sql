@@ -14,15 +14,16 @@ class PostgresDB:
         self.params = params
         self.params.update({'dbname': self.db_name})
 
-    def create_table(self) -> None:
+    def create_table(self, table_name) -> None:
         """
         Создает таблицу statistics для хранения статистики по репозиториям.
+        :param table_name: название таблицы
         :return: None
         """
         try:
             with psycopg2.connect(**self.params) as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""CREATE TABLE IF NOT EXISTS statistics (
+                    cur.execute(f"""CREATE TABLE IF NOT EXISTS {table_name} (
                         repository_id SERIAL PRIMARY KEY,
                         username VARCHAR(255) NOT NULL,
                         url TEXT NOT NULL,
@@ -40,9 +41,10 @@ class PostgresDB:
             if conn is not None:
                 conn.close()
 
-    def insert_to_table(self, data: list[dict]) -> None:
+    def insert_to_table(self, table_name: str, data: list[dict]) -> None:
         """
         Добавляет данные в таблицу.
+        :param table_name: название таблицы
         :param data: список словарей, содержащих статистику по каждому репозиторию
         :return: None
         """
@@ -51,8 +53,8 @@ class PostgresDB:
                 with conn.cursor() as cur:
                     for repo in data:
                         cur.execute(
-                            """
-                            INSERT INTO statistics (username, url, description, language, watchers, forks_count)
+                            f"""
+                            INSERT INTO {table_name} (username, url, description, language, watchers, forks_count)
                             VALUES (%s, %s, %s, %s, %s, %s)
                             """,
                             (repo['username'], repo['url'], repo['description'], repo['language'],
@@ -66,9 +68,10 @@ class PostgresDB:
             if conn is not None:
                 conn.close()
 
-    def get_data_from_postgres(self) -> list[dict]:
+    def get_data_from_postgres(self, table_name: str) -> list[dict]:
         """
         Получает данные из таблицы Postgres.
+        :param table_name: название таблицы
         :return: список с данными
         """
         data_dict = [{}]
@@ -76,7 +79,7 @@ class PostgresDB:
         try:
             with psycopg2.connect(**self.params) as conn:
                 with conn.cursor() as cur:
-                    cur.execute("SELECT * FROM statistics")
+                    cur.execute(f"SELECT * FROM {table_name}")
                     data = cur.fetchall()
                     data_dict = [{"repository_id": item[0], "username": item[1], "url": item[2], "description": item[3],
                                   "language": item[4], "watchers": item[5], "forks_count": item[6]} for item in data]

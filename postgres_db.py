@@ -1,3 +1,5 @@
+import json
+
 import psycopg2
 
 
@@ -66,11 +68,37 @@ class PostgresDB:
             if conn is not None:
                 conn.close()
 
-    def get_data_from_postgres(self) -> list:
-        pass
+    def get_data_from_postgres(self) -> list[dict]:
+        """
+        Получает данные из таблицы Postgres.
+        :return: список с данными
+        """
+        data_dict = [{}]
 
-    def save_to_json(self):
-        pass
+        try:
+            with psycopg2.connect(**self.params) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT * FROM statistics")
+                    data = cur.fetchall()
+                    data_dict = [{"repository_id": item[0], "username": item[1], "url": item[2], "description": item[3],
+                                  "language": item[4], "watchers": item[5], "forks_count": item[6]} for item in data]
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
+        finally:
+            if conn is not None:
+                conn.close()
+
+            return data_dict
+
+    @staticmethod
+    def save_to_json(data: list, file_name: str) -> None:
+
+        json_data = json.dumps(data)
+
+        with open(f"{file_name}.json", "w") as f:
+            f.write(json_data)
 
     def __repr__(self):
         pass
